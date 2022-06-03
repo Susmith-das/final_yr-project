@@ -4,7 +4,7 @@ module FifoBuffer(buff_out,empty,full,buff_in,wr_en,rd_en,clk,rst);
   input wire[15:0] buff_in;         // 16 bit data in bus
   
   output wire empty,full;            // flags
-  output wire[15:0] buff_out;      //  FIFO out
+  output reg[15:0] buff_out;      //  FIFO out
    
   reg[2:0] rd_ptr=0 ,wr_ptr=0;  // location pointer
   reg[3:0] count=0;            //  current data count
@@ -13,27 +13,27 @@ module FifoBuffer(buff_out,empty,full,buff_in,wr_en,rd_en,clk,rst);
   assign empty = (count==0)? 1'b1:1'b0;
   assign full  = (count==8)? 1'b1:1'b0;
 
- /* always@(posedge clk)
-  begin
-    if(count==0)
-      begin
-        empty<=1;
-        full<=0;
-      end
-    else if(count==8)
-      begin
-        empty<=0;
-        full<=1;
-      end
-    else
-      begin
-        empty<=0;
-        full<=0;
-      end
-  end*/
+  /* always@(posedge clk)
+    begin
+      if(count==0)
+        begin
+          empty<=1;
+          full<=0;
+        end
+      else if(count==8)
+        begin
+          empty<=0;
+          full<=1;
+        end
+      else
+        begin
+          empty<=0;
+          full<=0;
+        end
+    end*/
 
 
-  assign buff_out = (!empty && rd_en)? buffer[rd_ptr] : 16'hz;
+  //assign buff_out = (!empty && rd_en)? buffer[rd_ptr] : 16'hz;
 
   // counter
   always@(posedge clk or posedge rst)
@@ -74,11 +74,11 @@ module FifoBuffer(buff_out,empty,full,buff_in,wr_en,rd_en,clk,rst);
         buffer[wr_ptr]<=buff_in;
     end
   
-  /*always@(posedge clk)
+  always@(posedge clk)
     begin
       if(!empty && rd_en)
         buff_out<=buffer[rd_ptr];
-    end*/
+    end
 
    
    // writer

@@ -68,12 +68,12 @@ module memory_int #(parameter
 		//control signal latching for writing purpose only ( Write to memory at execute+1 cycle)
 		always@(posedge clk)
 		begin
-     if(ps_dm_wrb && ps_dm_cslt)
-      begin
-			dm_cslt <= ps_dm_cslt;
-			dm_wrb  <= ps_dm_wrb;
-			dm_add  <= dg_dm_add;
-      end
+			if(ps_dm_wrb && ps_dm_cslt)
+			begin
+					dm_cslt <= ps_dm_cslt;
+					dm_wrb  <= ps_dm_wrb;
+					dm_add  <= dg_dm_add;
+			end
 		end
 
 		//DM writing

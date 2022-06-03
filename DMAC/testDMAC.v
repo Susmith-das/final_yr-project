@@ -2,45 +2,61 @@ module testDMA();
  //inputs
 
  reg clk,rst,stall_ext,stall_int;
- reg ps_dm_cslt;
+ //reg ps_dm_cslt;
 
  // Outputs
- wire[15:0] IOA;
- wire[15:0] EPA;
- wire[15:0] EPD_OUT,IOD_OUT;
- wire[15:0] IOD_IN,EPD_IN;
- wire wrb;
+ wire[15:0] NPA,SPA;
+ wire[15:0] NPD_OUT,SPD_OUT;
+ wire[15:0] NPD_IN,SPD_IN;
+ wire wr_rd_np,wr_rd_sp,np_en,sp_en;
 
  // Instantiate the Unit Under Test (UUT) 
- DMAC uut(IOA,IOD_IN,IOD_OUT,EPA,EPD_IN,EPD_OUT,clk,rst,wrb,stall_int,stall_ext);
+
+ DMAC #(.ADR_SIZE(16), .DATA_SIZE(16))
+      tstDMA(
+           clk,
+           rst,
+           stall_int,
+           stall_ext,
+           NPD_IN,
+           SPD_IN,
+           wr_rd_np,
+           wr_rd_sp,
+           np_en,
+           sp_en,
+           NPA,
+           SPA,
+           NPD_OUT,
+           SPD_OUT
+        );
 
  memory_int #(.DMA_SIZE(16), .DMD_SIZE(16))
 		testMemint(
 					clk,
-					ps_dm_cslt,
-				  wrb,
-					IOA,
-					IOD_OUT,
-					IOD_IN
+					np_en,
+				  wr_rd_np,
+					NPA,
+					NPD_OUT,
+					NPD_IN
 				);
- /*memory_ext_1 #(.DMA_SIZE(16), .DMD_SIZE(16))
+ memory_ext_1 #(.DMA_SIZE(16), .DMD_SIZE(16))
 		testMemext1	(
 					clk,
-					ps_dm_cslt,
-				  ~wrb,
-					EPA,
-					EPD_OUT,
-					EPD_IN
-				);*/
- memory_ext_2 #(.DMA_SIZE(16), .DMD_SIZE(16))
+					sp_en,
+				  wr_rd_sp,
+					SPA,
+					SPD_OUT,
+					SPD_IN
+				);
+/* memory_ext_2 #(.DMA_SIZE(16), .DMD_SIZE(16))
     testMemext2	(
           clk,
-          ps_dm_cslt,
-          ~wrb,
-          EPA,
-          EPD_OUT,
-          EPD_IN
-        );     
+          sp_en,
+          wr_rd_sp,
+          SPA,
+          SPD_OUT,
+          SPD_IN
+        ); */
 
   initial 
   begin
@@ -57,12 +73,11 @@ module testDMA();
 
   initial 
   begin
-       stall_ext = 1'b0;
-       stall_int=0;
-       #8 ps_dm_cslt=1;
-   #32 stall_int = 1'b1;
-   #30 stall_int = 1'b0;
-   #40 stall_int = 1'b1;
-   #30 stall_int = 1'b0;
+       stall_int = 1'b0;
+       stall_ext=0;
+      #46 stall_ext = 1'b0;
+      #30 stall_ext = 1'b0;
+      #40 stall_ext = 1'b0;
+      #30 stall_ext = 1'b0;
   end
 endmodule

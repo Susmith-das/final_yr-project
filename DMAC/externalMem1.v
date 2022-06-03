@@ -12,7 +12,7 @@ module memory_ext_1 #(parameter
 				input wire ps_dm_wrb,      // Data Memory Read/Write
 				input wire[DMA_SIZE-1:0] dg_dm_add,   // Data Memory Address Bus
 				input wire[DMD_SIZE-1:0] bc_dt,	      // Data Memory Data In
-				output wire[DMD_SIZE-1:0] dm_bc_dt     // Data Memory Data Out
+				output reg[DMD_SIZE-1:0] dm_bc_dt     // Data Memory Data Out
 			);
 
 		integer file, i;
@@ -78,7 +78,8 @@ module memory_ext_1 #(parameter
 		end
 		
 		//control signal latching for reading purpose only ( Write to memory at execute+1 cycle)
-		always@(posedge clk)
+	  
+	   	always@(posedge clk)
 		begin
 			dm_cslt <= ps_dm_cslt;
 			dm_wrb  <= ps_dm_wrb;
@@ -87,17 +88,17 @@ module memory_ext_1 #(parameter
 
 		//DM reading
     
-	/*	always@(posedge clk )
+		always@(posedge clk )
 		begin
 			if(dm_cslt)
 			begin
 				if(~dm_wrb)
 				begin
-          dm_bc_dt<=dmData[dm_add];
+          			dm_bc_dt<=dmData[dm_add];
 				end
 			end
-		end*/
+		end
 
-    assign dm_bc_dt= (dm_cslt && ~dm_wrb)? dmData[dm_add] : 16'hz;
+    //assign dm_bc_dt= (dm_cslt && ~dm_wrb)? dmData[dm_add] : 16'hz;
 
 endmodule

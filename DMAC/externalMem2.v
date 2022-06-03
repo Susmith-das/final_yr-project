@@ -12,7 +12,7 @@ module memory_ext_2 #(parameter
 				input wire ps_dm_wrb,      // Data Memory Read/Write
 				input wire[DMA_SIZE-1:0] dg_dm_add,   // Data Memory Address Bus
 				input wire[DMD_SIZE-1:0] bc_dt,	      // Data Memory Data In
-				output wire[DMD_SIZE-1:0] dm_bc_dt     // Data Memory Data Out
+				output reg[DMD_SIZE-1:0] dm_bc_dt     // Data Memory Data Out
 			);
 
 		integer file, i;
@@ -32,11 +32,11 @@ module memory_ext_2 #(parameter
  `ifdef IGNORE
 	//----------------------------------------------------------------------------------------
 		//Initially open and close to clear the DM file
-	initial
+/*	initial
 		begin
 			file=$fopen(DM_LOCATE,"w");
 			$fclose(file);
-		end
+		end */
 	
 	//Comment above initial block if you want to access DM data present in data memory before startup.
 	//----------------------------------------------------------------------------------------
@@ -80,29 +80,34 @@ module memory_ext_2 #(parameter
 		//control signal latching for reading purpose only ( Write to memory at execute+2 cycle)
 		always@(posedge clk)
 		begin
-    if(~ps_dm_wrb && ps_dm_cslt) begin
 			dm_cslt <= ps_dm_cslt;
-      cslt<=dm_cslt;
+			cslt<=dm_cslt;
 
 			dm_wrb  <= ps_dm_wrb;
-      wrb<=dm_wrb;
+			wrb<=dm_wrb;
 
 			dm_add  <= dg_dm_add;
-      add<=dm_add;
-      end
+			add<=dm_add;
 		end
 
+	   /*always@(posedge clk)
+		begin
+			dm_cslt <= ps_dm_cslt;
+			dm_wrb  <= ps_dm_wrb;
+			dm_add  <= dg_dm_add;
+		end*/
+
 		//DM reading
-	/*	always@(posedge clk )
+		always@(posedge clk )
 		begin
 			if(cslt)
 			begin
 				if(~wrb)
 				begin
-          dm_bc_dt<=dmData[add];
+          			dm_bc_dt<=dmData[add];
 				end
 			end
-		end*/
+		end
     
-    assign dm_bc_dt = (cslt && ~wrb) ? dmData[add] : 16'hz;
+    // assign dm_bc_dt = (cslt && ~wrb) ? dmData[add] : 16'hz;
 endmodule
