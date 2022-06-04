@@ -1,8 +1,7 @@
 module testDMA();
  //inputs
 
- reg clk,rst,stall_ext,stall_int,reg_access;
- reg reg_access=0;
+ reg clk,rst,stall_ext,stall_int,reg_access=0;
 
  // Outputs
  wire[15:0] NPA,SPA;

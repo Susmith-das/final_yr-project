@@ -19,13 +19,13 @@ n@_opt
 OL;O;10.5;63
 R0
 vDMAC
-!s110 1654327717
+!s110 1654335644
 !i10b 1
-!s100 <YH`>_:iSolc4LdZnfabH2
-I64Q`D9QTJlE@0?R=`3C0=2
+!s100 6S:^oCM5`NJJXHD^gNl`21
+IYG=z>LhTL61EG]U8Yln6l1
 Z2 VDg1SIo80bB@j0V0VzS_@n1
 Z3 dC:/modeltech64_10.5/examples/Project_ADI/DMAC
-w1654327709
+w1654335637
 8C:/modeltech64_10.5/examples/Project_ADI/DMAC/dmac.v
 FC:/modeltech64_10.5/examples/Project_ADI/DMAC/dmac.v
 L0 1
@@ -33,7 +33,7 @@ Z4 OL;L;10.5;63
 r1
 !s85 0
 31
-!s108 1654327717.000000
+!s108 1654335644.000000
 !s107 C:/modeltech64_10.5/examples/Project_ADI/DMAC/dmac.v|
 !s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/modeltech64_10.5/examples/Project_ADI/DMAC/dmac.v|
 !i113 0
@@ -41,20 +41,21 @@ Z5 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact
 R1
 n@d@m@a@c
 vFifoBuffer
-R2
-r1
-!s85 0
-31
+Z6 !s110 1654334733
 !i10b 1
 !s100 WdME<BJDEWgJJRPI6c2BE2
 IR70fi531i:HJCG7j<]Y6:3
+R2
 R3
 w1654121726
 8C:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v
 FC:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v
 L0 1
 R4
-!s108 1654121849.000000
+r1
+!s85 0
+31
+Z7 !s108 1654334733.000000
 !s107 C:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v|
 !s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v|
 !i113 0
@@ -62,80 +63,84 @@ R5
 R1
 n@fifo@buffer
 vmemory_ext_1
-R2
-r1
-!s85 0
-31
+R6
 !i10b 1
 !s100 LRAUh^fhLC;VWHUBKb7LY0
 IX5RAZYFR2QVAX>jBf:V`U1
+R2
 R3
 w1654191137
 8C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem1.v
 FC:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem1.v
 L0 3
 R4
-Z6 !s108 1654191231.000000
+r1
+!s85 0
+31
+R7
 !s107 C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem1.v|
 !s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem1.v|
 !i113 0
 R5
 R1
 vmemory_ext_2
-R2
-r1
-!s85 0
-31
+R6
 !i10b 1
 !s100 O?@2D0W3aU?lg@fX@V>]?3
 IhM`J1ea4<ITjHI3:5e>n12
+R2
 R3
 w1654191145
 8C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem2.v
 FC:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem2.v
 L0 3
 R4
-R6
+r1
+!s85 0
+31
+R7
 !s107 C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem2.v|
 !s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem2.v|
 !i113 0
 R5
 R1
 vmemory_int
-R2
-r1
-!s85 0
-31
+R6
 !i10b 1
 !s100 3cRk72RR^TCLhBRmTWKXW2
 IYPQPf@JFYz8ooV:ciSh7S1
+R2
 R3
 w1654197048
 8C:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v
 FC:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v
 L0 3
 R4
-!s108 1654197253.000000
+r1
+!s85 0
+31
+R7
 !s107 C:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v|
 !s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v|
 !i113 0
 R5
 R1
 vtestDMA
-R2
-r1
-!s85 0
-31
+R6
 !i10b 1
-!s100 YLhDS`^?]hbY^D_eD[:>B0
-Ikmk5WB8jQicI==1@4_=4:0
+!s100 @IlZK<5JZaIeZYZUCak@;2
+ID;D18YIBXPL?k0>RfklEg1
+R2
 R3
-w1654198041
+w1654334704
 8C:/modeltech64_10.5/examples/Project_ADI/DMAC/testDMAC.v
 FC:/modeltech64_10.5/examples/Project_ADI/DMAC/testDMAC.v
 L0 1
 R4
-!s108 1654198049.000000
+r1
+!s85 0
+31
+R7
 !s107 C:/modeltech64_10.5/examples/Project_ADI/DMAC/testDMAC.v|
 !s90 -reportprogress|300|-work|work|-vopt|-stats=none|C:/modeltech64_10.5/examples/Project_ADI/DMAC/testDMAC.v|
 !i113 0
