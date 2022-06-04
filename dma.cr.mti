@@ -5,12 +5,12 @@ Model Technology ModelSim SE-64 vlog 10.5 Compiler 2016.02 Feb 13 2016
 Top level modules:
 	memory_ext_1
 
-} {} {}} C:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v {1 {vlog -work work -vopt -stats=none C:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v
+} {} {}} C:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v {1 {vlog -work work -vopt -stats=none C:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v
 Model Technology ModelSim SE-64 vlog 10.5 Compiler 2016.02 Feb 13 2016
--- Compiling module memory_int
+-- Compiling module FifoBuffer
 
 Top level modules:
-	memory_int
+	FifoBuffer
 
 } {} {}} C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem2.v {1 {vlog -work work -vopt -stats=none C:/modeltech64_10.5/examples/Project_ADI/DMAC/externalMem2.v
 Model Technology ModelSim SE-64 vlog 10.5 Compiler 2016.02 Feb 13 2016
@@ -19,12 +19,12 @@ Model Technology ModelSim SE-64 vlog 10.5 Compiler 2016.02 Feb 13 2016
 Top level modules:
 	memory_ext_2
 
-} {} {}} C:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v {1 {vlog -work work -vopt -stats=none C:/modeltech64_10.5/examples/Project_ADI/DMAC/fifo.v
+} {} {}} C:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v {1 {vlog -work work -vopt -stats=none C:/modeltech64_10.5/examples/Project_ADI/DMAC/internalMem.v
 Model Technology ModelSim SE-64 vlog 10.5 Compiler 2016.02 Feb 13 2016
--- Compiling module FifoBuffer
+-- Compiling module memory_int
 
 Top level modules:
-	FifoBuffer
+	memory_int
 
 } {} {}} C:/modeltech64_10.5/examples/Project_ADI/DMAC/testDMAC.v {1 {vlog -work work -vopt -stats=none C:/modeltech64_10.5/examples/Project_ADI/DMAC/testDMAC.v
 Model Technology ModelSim SE-64 vlog 10.5 Compiler 2016.02 Feb 13 2016

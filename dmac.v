@@ -20,8 +20,6 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
           output reg[DATA_SIZE-1:0] SPD_OUT
         );
 
-
- reg[ADR_SIZE-1:0] spa,dpa;
  reg[DATA_SIZE-1:0] buff_in;
  wire[DATA_SIZE-1:0] buff_out;
 
@@ -38,8 +36,9 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    10 - ext to int
    11 - ext to ext
 
-   Mem pipeline = 0 >> n+2 cycle 
-   Mem pipeline = 1 >> n+1 cycle
+    Mem pipeline
+   0 >> n+2 cycle 
+   1 >> n+1 cycle
 
         mode
    00 - normal mode
@@ -49,18 +48,18 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  =================================================================================*/
  reg[5:0] DMAC=6'b101010; // [mode[1],mode[0],DIR[1],DIR[0],Mem pipeline,DMA ENABLE]
 
- reg[ADR_SIZE-1:0] SI0=16'h0011;   // source
- reg[ADR_SIZE-1:0] SM0=16'h1; 
- reg[ADR_SIZE-1:0] SC0=16'hA;
+ reg[ADR_SIZE-1:0] SI0=16'h0011;   // source index address
+ reg[ADR_SIZE-1:0] SM0=16'h1;      // source address modifier
+ reg[ADR_SIZE-1:0] SC0=16'hA;      // source transfer counter 
                    
- reg[ADR_SIZE-1:0] DI0=16'h0;     // destination
- reg[ADR_SIZE-1:0] DM0=16'h1;
- reg[ADR_SIZE-1:0] DC0=16'hA;     // south port counter
+ reg[ADR_SIZE-1:0] DI0=16'h0;     // destination index address
+ reg[ADR_SIZE-1:0] DM0=16'h1;     // destination address modifier
+ reg[ADR_SIZE-1:0] DC0=16'hA;     // destination transfer counter
 
  reg[ADR_SIZE-1:0] SGC=16'hA;      // scatter gather counter
  reg[ADR_SIZE-1:0] SGR=16'h0021;   // scatter pointer
 
- reg[ADR_SIZE-1:0] CP =16'h2;       // chaining
+ reg[ADR_SIZE-1:0] CP =16'h2;       // chain pointer
  reg[ADR_SIZE-1:0] WR =16'h0;       // working register
  reg[ADR_SIZE-1:0] GP =16'h0;       // general purpose register
 
@@ -84,15 +83,11 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
     end
    else if(DMAC[3:2]==2'b01)  // internal to external
     begin
-       NPA<=spa;
-       SPA<=dpa;
        buff_in <=NPD_IN;
        SPD_OUT <=buff_out;
     end
    else if(DMAC[3:2]==2'b10)  // external to internal
     begin
-       NPA<=dpa;
-       SPA<=spa;
        buff_in <=SPD_IN;
        NPD_OUT <=buff_out;
     end
@@ -129,7 +124,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
   if(DMAC[0]==1 && DMAC[3:2]==2'b00)
    begin
       case(state)
-        s0: state<=(NC0!=0 && SC0!=0) ? s1: s0;
+        s0: state<=(SC0!=0 && DC0!=0) ? s1: s0;
         s1: state<=s2;
         s2: state<=s3;
         s3: state<=s0; 
@@ -140,7 +135,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    else if(DMAC[0]==1 && DMAC[3:2]==2'b11)
    begin
       case(state)
-        s0: state<=(NC0!=0 && SC0!=0) ? s1: s0;
+        s0: state<=(SC0!=0 && DC0!=0) ? s1: s0;
         s1: state<=s2;
         s2: state<=s0;
         default: state<=s0;  
@@ -154,32 +149,32 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    begin
       case(state)
           s0: begin
-                NPA<=NI0;
-                NI0<=NI0+NM0;
-                NC0<=NC0-1;
-                wr_rd_np<=0;
+                NPA<=SI0;
+                SI0<=SI0+SM0;
+                SC0<=SC0-1;
+                wr_rd_NP<=0;
               end 
           s1: begin
                 wr_en<=1;
                 rd_en<=0;
               end
           s2: begin
-                NPA<=SI0;
-                SI0<=SI0+SM0;
-                SC0<=SC0-1;
-                wr_rd_np<=1;
+                NPA<=DI0;
+                DI0<=DI0+DM0;
+                DC0<=DC0-1;
+                wr_rd_NP<=1;
                 wr_en<=0;
                 rd_en<=1;
               end
           s3: begin
                 wr_en<=0;
                 rd_en<=0;
-                wr_rd_np<=0;
+                wr_rd_NP<=0;
               end
           default: begin
                 wr_en<=0;
                 rd_en<=0;
-                wr_rd_np<=0;
+                wr_rd_NP<=0;
               end
       endcase
    end
@@ -188,26 +183,26 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    begin
        case(state)
           s0: begin
-                SPA<=NI0;
-                NI0<=NI0+NM0;
-                NC0<=NC0-1;
-                wr_rd_sp<=0;
+                SPA<=SI0;
+                SI0<=SI0+SM0;
+                SC0<=SC0-1;
+                wr_rd_SP<=0;
               end 
           s1: begin
                 wr_en<=1;
                 rd_en<=1;
-                wr_rd_sp<=1;
+                wr_rd_SP<=1;
               end
           s2: begin
-                SPA<=SI0;
-                SI0<=SI0+SM0;
-                SC0<=SC0-1;
-                wr_rd_sp<=0;
+                SPA<=DI0;
+                DI0<=DI0+DM0;
+                DC0<=DC0-1;
+                wr_rd_SP<=0;
                 wr_en<=0;
                 rd_en<=0;
               end
           default: begin
-                wr_rd_sp<=0;
+                wr_rd_SP<=0;
                 wr_en<=0;
                 rd_en<=0;
               end
@@ -235,7 +230,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    begin
        if(rst)
           begin 
-            SchState<=S10;
+            SchState<=Sch11;
             //NC0 <=0;
             //SC0 <=0;
             wr_en<=0;
@@ -256,7 +251,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
                 Sch9: SchState <= Sch10;
                 Sch10:SchState <= Sch11;
                 Sch11:SchState <= ((SC0==0 && DC0 == 0) && CP != 16'h0) ? Sch0 : Sch11;
-                default: SchState <= Sch10;
+                default: SchState <= Sch11;
             endcase
           end
    end     
@@ -314,29 +309,28 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
                 end
             Sch9: begin
                   DM0 <= NPD_IN;
-                  np_en<=0;
+                  NP_en<=0;
                 end
             Sch10:begin  
                   DC0  <= NPD_IN;
 
                   if(DMAC[5:2]==4'b0100)
-                    wr_rd_sp<=1'b0;
+                    wr_rd_SP<=1'b0;
                   else if(DMAC[5:2]==4'b0101)
                   begin
-                    wr_rd_np<=0;
-                    wr_rd_sp<=1;
+                    wr_rd_NP<=0;
+                    wr_rd_SP<=1;
                   end
                   else if(DMAC[5:2]==4'b0110)
                   begin
-                    wr_rd_np<=1;
-                    wr_rd_sp<=0;
+                    wr_rd_NP<=1;
+                    wr_rd_SP<=0;
                   end
                   else if(DMAC[5:2]==4'b0111)
-                    wr_rd_np<=1'b0;
-
+                    wr_rd_NP<=1'b0;
                   end
             Sch11:begin
-                  DMAC[0] <= 1;
+                   DMAC[0]<=(CP==16'h0)? <= 0:1;
                   end     
             default: SchState <= Sch11; 
         endcase 
@@ -462,7 +456,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
                   SP_en <=0;
                   wr_rd_NP<=0;
                   wr_rd_NP<=0;
-                  DMAC[0] <= (NC0 == 0 && SGC == 0) ? 0 : 1;
+                  DMAC[0] <= (SC0 == 0 && SGC == 0) ? 0 : 1;
                  end 
             Sg1: begin
                   wr_en <=0;
@@ -510,9 +504,9 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
                   rd_en <=1;
                   NP_en <=1;
                   SP_en <=0;
-                  NPA<=NI0;
-                  NI0<=NI0+1;
-                  NC0<=NC0-1;
+                  NPA<=SI0;
+                  SI0<=SI0+1;
+                  SC0<=SC0-1;
                  end            
             default: Sgstate <= Sg0;
         endcase
