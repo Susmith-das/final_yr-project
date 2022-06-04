@@ -50,22 +50,22 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    11 - resrved     
  =================================================================================*/
 
- reg[ADR_SIZE-1:0] DMAC= { {9{1'b0}} , 1'b0 , 2'b00 , 2'b01 , 1'b0 , 1'b0 };
+ reg[ADR_SIZE-1:0] DMAC= { {9{1'b0}} , 1'b1 , 2'b10 , 2'b01 , 1'b0 , 1'b1 };
 
  reg[ADR_SIZE-1:0] SI0=16'h0011;   // source index address
  reg[ADR_SIZE-1:0] SM0=16'h1;      // source address modifier
  reg[ADR_SIZE-1:0] SC0=16'hA;      // source transfer counter 
                    
- reg[ADR_SIZE-1:0] DI0=16'h0;     // destination index address
- reg[ADR_SIZE-1:0] DM0=16'h1;     // destination address modifier
- reg[ADR_SIZE-1:0] DC0=16'hA;     // destination transfer counter
+ reg[ADR_SIZE-1:0] DI0=16'h0;      // destination index address
+ reg[ADR_SIZE-1:0] DM0=16'h1;      // destination address modifier
+ reg[ADR_SIZE-1:0] DC0=16'hA;      // destination transfer counter
 
  reg[ADR_SIZE-1:0] SGC=16'hA;      // scatter gather counter
  reg[ADR_SIZE-1:0] SGR=16'h0021;   // scatter pointer
 
- reg[ADR_SIZE-1:0] CP =16'h2;       // chain pointer
- reg[ADR_SIZE-1:0] WR =16'h0;       // working register
- reg[ADR_SIZE-1:0] GP =16'h0;       // general purpose register
+ reg[ADR_SIZE-1:0] CP =16'h2;      // chain pointer
+ reg[ADR_SIZE-1:0] WR =16'h0;      // working register
+ reg[ADR_SIZE-1:0] GP =16'h0;      // general purpose register
 
  reg[ADR_SIZE-1:0] NC0_l1=0,NC0_l2=0,NC0_l3=0;
  reg[ADR_SIZE-1:0] SC0_l1=0,SC0_l2=0,SC0_l3=0,SC0_l4=0,SC0_l5=0,SC0_l6=0;
@@ -91,35 +91,46 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
      endcase
   end
  end
+
  always@(*)
  begin
-   DMAC[3] = (SI0[15:12]==4'b1111)? 1'b0:1'b1;
-   DMAC[2] = (DI0[15:12]==4'b1111)? 1'b0:1'b1;    
+   if(DMAC[5:4]==2'b10)
+    begin
+      if(DMAC[6]==1'b0)
+        DMAC[3:2] = 2'b01;
+      else
+        DMAC[3:2] = 2'b10;  
+    end  
+   else
+    begin
+      DMAC[3] = (SI0[15:12]==4'b1111)? 1'b0:1'b1;
+      DMAC[2] = (DI0[15:12]==4'b1111)? 1'b0:1'b1; 
+    end    
  end
 
  // port muliplexing and demultiplexing
 
- always@(DMAC[3:2])  
+ always@(*)  
  begin
    if(DMAC[3:2]==2'b00)       // internal to internal
     begin
-       buff_in <=NPD_IN;
-       NPD_OUT <=buff_out;
+       buff_in =NPD_IN;
+       NPD_OUT =buff_out;
     end
    else if(DMAC[3:2]==2'b01)  // internal to external
     begin
-       buff_in <=NPD_IN;
-       SPD_OUT <=buff_out;
+       buff_in =NPD_IN;
+       SPD_OUT =buff_out;
     end
    else if(DMAC[3:2]==2'b10)  // external to internal
     begin
-       buff_in <=SPD_IN;
-       NPD_OUT <=buff_out;
+       buff_in = SPD_IN;
+       NPD_OUT = buff_out;
     end
    else                       // external to external
     begin
-       buff_in <=SPD_IN;
-       SPD_OUT <=buff_out;
+       buff_in =SPD_IN;
+       SPD_OUT =buff_out;
     end  
  end
  
@@ -496,7 +507,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
                   wr_en <=0;
                   rd_en <=0;
                   NP_en <=0;
-                  SP_en <=1;
+                  SP_en <=0;
                 end
             Sg3: begin
                   wr_en <=0;
@@ -522,13 +533,13 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
                   rd_en <=0;
                   NP_en <=0;
                   SP_en <=0;
-                  wr_rd_NP<=1;
                  end 
             Sg7: begin
                   wr_en <=0;
                   rd_en <=1;
                   NP_en <=1;
                   SP_en <=0;
+                  wr_rd_NP<=1;
                   NPA<=SI0;
                   SI0<=SI0+1;
                   SC0<=SC0-1;
@@ -559,7 +570,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  /* internal address generator - stage 1*/
  always@(posedge clk)
   begin
-       if(DMAC[0]==1 && DMAC[5]==0) 
+       if(DMAC[0]==1'b1 && DMAC[5]== 1'b0) 
         begin
             if(DMAC[3:2]==2'b01)  // internal memory reading
                 begin
@@ -585,7 +596,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  /* Internal address latching stage-2*/ 
  always@(posedge clk)
   begin
-      if(DMAC[0]==1 && DMAC[5]==0)
+      if(DMAC[0]==1'b1 && DMAC[5]==1'b0)
        begin
             if(DMAC[3:2]==2'b01)         // internal reading
               begin
@@ -603,7 +614,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  /* external address generator - stage 1 */
  always@(posedge clk)
   begin
-      if(DMAC[0]==1 && DMAC[5]==0)
+      if(DMAC[0]==1'b1 && DMAC[5]==1'b0)
        begin
           if(DMAC[3:2]==2'b01)           //external memory write
             begin
@@ -629,7 +640,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  /*External address latching stage-2*/ 
  always@(posedge clk)
   begin
-      if(DMAC[0]==1 && DMAC[5]==0)
+      if(DMAC[0]==1'b1 && DMAC[5]==1'b0)
         begin
             if(DMAC[3:2]==2'b01)  // ext writing
             begin
@@ -654,7 +665,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  /* count keepers */
   always@(posedge clk)
   begin
-       if(DMAC[0]==1 && DMAC[5]==0) 
+       if(DMAC[0]==1'b1 && DMAC[5]==1'b0) 
         begin
             if(DMAC[3:2]==2'b01)
                 begin
@@ -693,7 +704,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  /*Fifo,port controll*/
   always@(negedge clk)
   begin
-      if(DMAC[0]==1 && DMAC[5]==0)
+      if(DMAC[0]==1'b1 && DMAC[5]==1'b0)
        begin
             if(DMAC[3:2]==2'b01)                  
               begin
