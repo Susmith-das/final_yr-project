@@ -4,6 +4,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
           input wire  rst,
           input wire  r_b_NP,
           input wire  r_b_SP,
+          input wire  reg_access;
           
           input wire[DATA_SIZE-1:0] NPD_IN,
           input wire[DATA_SIZE-1:0] SPD_IN,
@@ -19,7 +20,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
           output reg[DATA_SIZE-1:0] NPD_OUT,
           output reg[DATA_SIZE-1:0] SPD_OUT
         );
-
+ 
  reg[DATA_SIZE-1:0] buff_in;
  wire[DATA_SIZE-1:0] buff_out;
 
@@ -30,6 +31,8 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  reg[ADR_SIZE-1:0] SPA_L1,SPA_L2;
  
  /*=================================================================================
+  DMAC[reserved|scatter/gather|mode[1]|mode[0]|DIR[1]|DIR[0]|Mem pipeline|DMA ENABLE]
+  
         DIR
    00 - int to int
    01 - int to ext
@@ -46,7 +49,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    10 - scatter gather
    11 - resrved     
  =================================================================================*/
- reg[5:0] DMAC=6'b101010; // [mode[1],mode[0],DIR[1],DIR[0],Mem pipeline,DMA ENABLE]
+ reg[ADR_SIZE-1:0] DMAC= {9{x},{0},{2'b00},{2'b01},{0},{1}};
 
  reg[ADR_SIZE-1:0] SI0=16'h0011;   // source index address
  reg[ADR_SIZE-1:0] SM0=16'h1;      // source address modifier
@@ -65,6 +68,30 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
 
  reg[ADR_SIZE-1:0] NC0_l1=0,NC0_l2=0,NC0_l3=0;
  reg[ADR_SIZE-1:0] SC0_l1=0,SC0_l2=0,SC0_l3=0,SC0_l4=0,SC0_l5=0,SC0_l6=0;
+
+
+ always@(posedge clk)
+ begin
+   if(reg_access==1)
+   begin
+    case(NPA)
+     begin
+        16'hFFF0: DMAC <= NPD_IN;
+        16'hFFF1: SI0  <= NPD_IN;
+        16'hFFF2: SM0  <= NPD_IN;
+        16'hFFF3: SC0  <= NPD_IN;
+        16'hFFF4: DI0  <= NPD_IN;
+        16'hFFF5: DM0  <= NPD_IN;
+        16'hFFF6: DC0  <= NPD_IN;
+        16'hFFF7: SGC  <= NPD_IN;
+        16'hFFF8: SGR  <= NPD_IN;
+        16'hFFF9: CP   <= NPD_IN;
+        16'hFFFA: WR   <= NPD_IN;
+        16'hFFFB: GP   <= NPD_IN;
+        default: NPD_IN<=NPD_IN;
+     endcase
+   end
+ end
 
  always@(*)
  begin
@@ -110,11 +137,11 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
       SPD_OUT=buff_out; 
  end*/
 
- //-------------------------FIFO---------------------------------------------------
+ //--------------------------------------------------FIFO---------------------------------------------------
 
  FifoBuffer F1(buff_out,empty,full,buff_in,wr_en,rd_en,clk,rst);
 
-//----------------------internal to internal--------------------------------------
+//--------------------------------------------internal to internal--------------------------------------
  
  reg[2:0] state=0;
  parameter s0=3'b000 ,s1=3'b001 ,s2=3'b010 ,s3=3'b011 ,s4=3'b100 ;
@@ -210,7 +237,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    end
  end
 
-//-----------------------------------------------Chained-----------------------------------------------------------------------------
+//--------------------------------------------------Chained-----------------------------------------------------------------------------
  parameter Sch0= 4'b0000,
            Sch1= 4'b0001,
            Sch2= 4'b0010,
@@ -365,7 +392,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
             wr_en<=0;
             rd_en<=0;
           end 
-       else if(DMAC[5:4] == 2'b10 && DMAC[3:2] == 2'b01 && DMAC[0]==1)
+       else if(DMAC[5:4] == 2'b10 && DMAC[6] == 0 && DMAC[0]==1)
           begin
             case (Scstate)
                 Sc0: Scstate <= (SC0==0 && SGC == 0) ? Sc0 : Sc1;
@@ -377,7 +404,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
                 default: Scstate <= Sc0;
             endcase
          end
-       else if(DMAC[5:4] == 2'b10 && DMAC[3:2] == 2'b10 && DMAC[0]==1)
+       else if(DMAC[5:4] == 2'b10 && DMAC[6] == 1 && DMAC[0]==1)
             begin 
               case (Sgstate)
                   Sg0: Sgstate <= (SC0==0 && SGC == 0) ? Sg0 : Sg1;

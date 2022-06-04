@@ -1,8 +1,8 @@
 module testDMA();
  //inputs
 
- reg clk,rst,stall_ext,stall_int;
- //reg ps_dm_cslt;
+ reg clk,rst,stall_ext,stall_int,reg_access;
+ reg reg_access=0;
 
  // Outputs
  wire[15:0] NPA,SPA;
@@ -18,6 +18,7 @@ module testDMA();
            rst,
            stall_int,
            stall_ext,
+           reg_access,
            NPD_IN,
            SPD_IN,
            wr_rd_np,
@@ -39,7 +40,7 @@ module testDMA();
 					NPD_OUT,
 					NPD_IN
 				);
- memory_ext_1 #(.DMA_SIZE(16), .DMD_SIZE(16))
+/* memory_ext_1 #(.DMA_SIZE(16), .DMD_SIZE(16))
 		testMemext1	(
 					clk,
 					sp_en,
@@ -47,8 +48,8 @@ module testDMA();
 					SPA,
 					SPD_OUT,
 					SPD_IN
-				);
-/* memory_ext_2 #(.DMA_SIZE(16), .DMD_SIZE(16))
+				);*/
+memory_ext_2 #(.DMA_SIZE(16), .DMD_SIZE(16))
     testMemext2	(
           clk,
           sp_en,
@@ -56,7 +57,7 @@ module testDMA();
           SPA,
           SPD_OUT,
           SPD_IN
-        ); */
+        );
 
   initial 
   begin
