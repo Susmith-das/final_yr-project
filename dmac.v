@@ -50,13 +50,13 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
    11 - resrved     
  =================================================================================*/
  reg[ADR_SIZE-1:0] DMAC = { {9{1'b0}} , 1'b0 , 2'b00 , 2'b01 , 1'b1 , 1'b1 };
- reg[ADR_SIZE-1:0] SI0 =16'hF020;   // source index address
+ reg[ADR_SIZE-1:0] SI0 =16'h0010;   // source index address
  reg[ADR_SIZE-1:0] SM0 =16'h1;      // source address modifier
- reg[ADR_SIZE-1:0] SC0 =16'hB;      // source transfer counter 
+ reg[ADR_SIZE-1:0] SC0 =16'hA;      // source transfer counter 
                    
- reg[ADR_SIZE-1:0] DI0 =16'hF030;   // destination index address
- reg[ADR_SIZE-1:0] DM0 =16'h0002;   // destination address modifier
- reg[ADR_SIZE-1:0] DC0 =16'hB;      // destination transfer counter
+ reg[ADR_SIZE-1:0] DI0 =16'h0020;   // destination index address
+ reg[ADR_SIZE-1:0] DM0 =16'h1;   // destination address modifier
+ reg[ADR_SIZE-1:0] DC0 =16'hA;      // destination transfer counter
 
  reg[ADR_SIZE-1:0] SGC =16'hA;      // scatter gather counter
  reg[ADR_SIZE-1:0] SGR =16'h0021;   // scatter pointer
@@ -159,116 +159,6 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
  //--------------------------------------------------FIFO---------------------------------------------------
 
  FifoBuffer F1(buff_out,empty,full,buff_in,wr_en,rd_en,clk,rst);
-
-//--------------------------------------------internal to internal--------------------------------------
- 
- reg[2:0] state;
- parameter s0=3'b000 ,s1=3'b001 ,s2=3'b010 ,s3=3'b011 ,s4=3'b100 ;
-
- always@ (posedge clk or posedge rst) 
- begin
-  if(rst)
-   begin
-     state<=s0;
-   end 
-  else if(DMAC[0]==1'b1 && DMAC[3:2]==2'b00 && DMAC[5]==1'b0)     
-   begin
-      case(state)
-          s0: begin
-              if(SC0!=1'b0 && DC0!=1'b0)
-              begin
-                wr_en   <=1'b0;
-                rd_en   <=1'b0;
-                wr_rd_NP<=1'b0;
-                wr_rd_SP<=1'b0;
-                NP_en   <=1'b1;
-                SP_en   <=1'b0;
-
-                NPA<=SI0;
-                SI0<=SI0+SM0;
-                SC0<=SC0-1;
-                
-                state<=s1;
-              end
-              else
-                DMAC[0]<= 1'b0;     
-              end 
-          s1: begin
-                wr_en   <=1'b1;
-                rd_en   <=1'b0;
-                wr_rd_NP<=1'b0;
-                wr_rd_SP<=1'b0;
-                NP_en   <=1'b0;
-                SP_en   <=1'b0;
-
-                state<=s2;
-              end
-          s2: begin
-                wr_en   <=1'b0;
-                rd_en   <=1'b1;
-                wr_rd_NP<=1'b1;
-                wr_rd_SP<=1'b0;
-                NP_en   <=1'b1;
-                SP_en   <=1'b0;
-
-                NPA<=DI0;
-                DI0<=DI0+DM0;
-                DC0<=DC0-1;
-
-                state<=s3;
-              end
-           s3: begin
-                wr_en   <=1'b0;
-                rd_en   <=1'b0;
-                wr_rd_NP<=1'b0;
-                wr_rd_SP<=1'b0;
-                NP_en   <=1'b0;
-                SP_en   <=1'b0;
-
-                state<=s0;
-              end
-          default: begin
-                wr_en   <=1'b0;
-                rd_en   <=1'b0;
-                wr_rd_NP<=1'b0;
-                wr_rd_SP<=1'b0;
-                NP_en   <=1'b0;
-                SP_en   <=1'b0;
-                state<=s0;
-              end
-      endcase
-    end
-
-  else if(DMAC[0]==1'b1 && DMAC[3:2]==2'b11 && DMAC[5]==1'b0)
-   begin
-       case(state)
-          s0: begin
-                SPA<=SI0;
-                SI0<=SI0+SM0;
-                SC0<=SC0-1;
-                wr_rd_SP<=1'b0;
-              end 
-          s1: begin
-                wr_en<=1;
-                rd_en<=1;
-                wr_rd_SP<=1;
-              end
-          s2: begin
-                SPA<=DI0;
-                DI0<=DI0+DM0;
-                DC0<=DC0-1;
-                wr_rd_SP<=1'b0;
-                wr_en<=1'b0;
-                rd_en<=1'b0;
-              end
-          default: begin
-                wr_rd_SP<=1'b0;
-                wr_en<=1'b0;
-                rd_en<=1'b0;
-              end
-      endcase
-    end
- end
 
 //--------------------------------------------------Chained-----------------------------------------------------------------------------
  parameter Sch0= 4'b0000,
@@ -519,7 +409,7 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
         end
   end
 
-//-----------------------------------------------Pipelined transfer-----------------------------------------------------------------
+//-----------------------------------------------normal transfer-----------------------------------------------------------------
  
  // port read-write logic
  always@(*)
@@ -739,7 +629,185 @@ module DMAC #(parameter ADR_SIZE=16, DATA_SIZE=16)
 
   end
 
+
+ reg[2:0] state;
+ parameter s0=3'b000 ,s1=3'b001 ,s2=3'b010 ,s3=3'b011 ,s4=3'b100,s5=3'b101 ;
+
+ always@ (posedge clk or posedge rst) 
+ begin
+  if(rst)
+   begin
+     state<=s0;
+   end
+  //--------------------------------------------internal to internal--------------------------------------    
+  else if(DMAC[0]==1'b1 && DMAC[3:2]==2'b00 && DMAC[5]==1'b0)     
+   begin
+      case(state)
+          s0: begin
+              if(SC0!=1'b0 && DC0!=1'b0)
+              begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b1;
+                SP_en   <=1'b0;
+
+                NPA<=SI0;
+                SI0<=SI0+SM0;
+                SC0<=SC0-1;
+                
+                state<=s1;
+              end
+              else
+                DMAC[0]<= 1'b0;     
+              end 
+          s1: begin
+                wr_en   <=1'b1;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+
+                state<=s2;
+              end
+          s2: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b1;
+                wr_rd_NP<=1'b1;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b1;
+                SP_en   <=1'b0;
+
+                NPA<=DI0;
+                DI0<=DI0+DM0;
+                DC0<=DC0-1;
+
+                state<=s3;
+              end
+           s3: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+
+                state<=s0;
+              end
+          default: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+                state<=s0;
+              end
+      endcase
+    end
+  //--------------------------------------------external to external--------------------------------------
+  else if(DMAC[0]==1'b1 && DMAC[3:2]==2'b11 && DMAC[5]==1'b0)
+   begin
+       case(state)
+          s0:begin
+             if(SC0!=0 && DC0!=0)
+              begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b1;
+
+                SPA<=SI0;
+                SI0<=SI0+SM0;
+                SC0<=SC0-1;
+                
+                state<=s1;
+              end
+              else
+                begin
+                DMAC[0]<= 1'b0;
+                wr_rd_SP<=1'b0;
+                SP_en   <=1'b0; 
+                end
+            end
+          s1: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+
+                if(DMAC[1]==1'b0)
+                 state<=s2;
+                else
+                 state<=s3; 
+              end
+           s2: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+                
+                state<=s3;
+              end   
+          s3: begin
+                wr_en   <=1'b1;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+                
+                state<=s4;
+              end
+          s4: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b1;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+                
+                state<=s5;
+              end
+          s5: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b1;
+                NP_en   <=1'b0;
+                SP_en   <=1'b1;
+
+                SPA<=DI0;
+                DI0<=DI0+DM0;
+                DC0<=DC0-1;
+                
+                state<=s0;
+              end
+          default: begin
+                wr_en   <=1'b0;
+                rd_en   <=1'b0;
+                wr_rd_NP<=1'b0;
+                wr_rd_SP<=1'b0;
+                NP_en   <=1'b0;
+                SP_en   <=1'b0;
+                state<=s0;
+              end
+      endcase
+    end
+ end
+
 endmodule
+
+
+ 
 
 /*module dmaTest();
  //inputs
