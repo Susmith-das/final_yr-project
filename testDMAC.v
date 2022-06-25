@@ -39,7 +39,7 @@ module testDMA();
 					NPD_OUT,
 					NPD_IN
 				);
-/* memory_ext_1 #(.DMA_SIZE(16), .DMD_SIZE(16))
+ memory_ext_1 #(.DMA_SIZE(16), .DMD_SIZE(16))
 		testMemext1	(
 					clk,
 					sp_en,
@@ -47,8 +47,8 @@ module testDMA();
 					SPA,
 					SPD_OUT,
 					SPD_IN
-				);*/
-memory_ext_2 #(.DMA_SIZE(16), .DMD_SIZE(16))
+				);
+/*memory_ext_2 #(.DMA_SIZE(16), .DMD_SIZE(16))
     testMemext2	(
           clk,
           sp_en,
@@ -56,7 +56,7 @@ memory_ext_2 #(.DMA_SIZE(16), .DMD_SIZE(16))
           SPA,
           SPD_OUT,
           SPD_IN
-        );
+        );*/
 
   initial 
   begin

@@ -7,7 +7,7 @@ module memory_ext_2 #(parameter
                   DMA_SIZE=3, DMD_SIZE=4)
 			(
 				input wire clk,
-				input wire ps_dm_cslt,    // Data Memory Chip Select
+				input reg ps_dm_cslt,    // Data Memory Chip Select
 				//input wire[PMD_SIZE-1:0] pmDataIn, (future scope)
 				input wire ps_dm_wrb,      // Data Memory Read/Write
 				input wire[DMA_SIZE-1:0] dg_dm_add,   // Data Memory Address Bus
